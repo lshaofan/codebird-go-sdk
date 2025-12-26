@@ -72,6 +72,8 @@ type Organization struct {
 	ID   uint   `json:"id"`
 	Code string `json:"code,omitempty"`
 	Name string `json:"name,omitempty"`
+	Logo string `json:"logo,omitempty"`
+	Role string `json:"role,omitempty"` // 用户在该组织中的角色（owner/admin/member）
 }
 
 // Claims 为 JWT 携带的完整信息
