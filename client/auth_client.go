@@ -343,19 +343,29 @@ func (c *Client) UpdateUserInfo(ctx context.Context, accessToken string, req Upd
 
 // ==================== 应用签名认证接口 ====================
 
+// UserInfoByIDOrganization 用户当前组织信息（应用签名认证）
+type UserInfoByIDOrganization struct {
+	OrganizationID   uint   `json:"organization_id"`   // 组织ID
+	OrganizationName string `json:"organization_name"` // 组织名称
+	OrganizationCode string `json:"organization_code"` // 组织编码
+	OrganizationLogo string `json:"organization_logo"` // 组织Logo
+	Role             string `json:"role"`              // 用户在组织中的角色（owner/admin/member）
+}
+
 // UserInfoByID 通过用户 ID 获取的用户信息（应用签名认证）
 type UserInfoByID struct {
-	ID           uint     `json:"id"`
-	Username     string   `json:"username"`
-	Nickname     string   `json:"nickname"`
-	Avatar       string   `json:"avatar"`
-	Email        string   `json:"email"`
-	Phone        string   `json:"phone"`
-	Gender       int      `json:"gender"`
-	Introduction string   `json:"introduction"`
-	IsSuper      bool     `json:"is_super"`
-	Status       int      `json:"status"`
-	Roles        []string `json:"roles,omitempty"`
+	ID           uint                      `json:"id"`
+	Username     string                    `json:"username"`
+	Nickname     string                    `json:"nickname"`
+	Avatar       string                    `json:"avatar"`
+	Email        string                    `json:"email"`
+	Phone        string                    `json:"phone"`
+	Gender       int                       `json:"gender"`
+	Introduction string                    `json:"introduction"`
+	IsSuper      bool                      `json:"is_super"`
+	Status       int                       `json:"status"`
+	Roles        []string                  `json:"roles,omitempty"`
+	Organization *UserInfoByIDOrganization `json:"organization,omitempty"` // 当前组织信息
 }
 
 // GetUserInfoByID 通过用户 ID 获取用户信息（需要配置应用签名）
