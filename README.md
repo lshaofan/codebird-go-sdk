@@ -3,6 +3,7 @@
 `codebird-go-sdk` 是码鸟云的官方 Go SDK，当前提供两条能力线：
 
 - `Verifier`：验证 React SPA 或其他前端带来的用户 `access_token`
+- `Client`：基于当前用户 `access_token` 获取实时会话上下文
 - `M2MClient`：用 `client_credentials` 调用码鸟云的组织成员管理接口
 
 ## 安装
@@ -48,7 +49,62 @@ Verifier 当前支持：
 - JWT 验签
 - `iss` / `aud` / `exp` / `nbf` 校验
 - 组织 claims 解析
-- `organization_roles` 数组与 map 两种格式兼容
+
+当前组织 claims 标准约定：
+
+- `organization_roles` 使用新版字符串数组格式，例如：
+
+```json
+["org_123:admin", "org_456:member"]
+```
+
+- 组织管理员身份请始终以 `organization_is_admin` 为准
+- 不要根据 `organization_roles` 中是否包含 `admin` 推断组织管理员身份
+
+## 获取实时会话上下文
+
+如果业务后端需要按数据库最新状态拿到用户、应用和组织关系，而不是只依赖 token claims，可以再使用 `Client`：
+
+```go
+package main
+
+import (
+	"context"
+	"log"
+
+	codebird "github.com/lshaofan/codebird-go-sdk"
+)
+
+func main() {
+	client, err := codebird.NewClient(codebird.Config{
+		Issuer: "https://auth.codebird.cloud",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	sessionCtx, err := client.GetSessionContext(context.Background(), "ACCESS_TOKEN", &codebird.GetSessionContextOptions{
+		OrganizationID: "org_123",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("user=%s app=%v organization=%v", sessionCtx.User.ID, sessionCtx.Application, sessionCtx.Organization)
+}
+```
+
+推荐分层：
+
+- `Verifier`：验证 token、解析轻量 claims
+- `Client.GetSessionContext`：获取实时用户 / 组织 / 应用上下文
+
+也就是说：
+
+- claims 适合做轻量登录态上下文
+- 实时权限判断应以 `GetSessionContext` 结果为准
+- 轻量 claims 中是否为组织管理员，看 `OrganizationIsAdmin`
+- 实时上下文中是否为组织管理员，看 `SessionContext.Organization.IsAdmin`
 
 ## M2M 组织成员管理
 
@@ -116,11 +172,11 @@ func main() {
 `codebird-go-sdk` 的发布方式是：
 
 - 在仓库中提交版本变更
-- 推送新的语义化 tag，例如 `v0.1.0`
+- 推送新的语义化 tag，例如 `v0.2.0`
 - Go 用户通过：
 
 ```bash
-go get github.com/lshaofan/codebird-go-sdk@v0.1.0
+go get github.com/lshaofan/codebird-go-sdk@v0.2.0
 ```
 
 GitHub Actions 会在 tag 推送时运行测试并创建 GitHub Release。
