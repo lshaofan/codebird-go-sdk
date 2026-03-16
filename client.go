@@ -63,10 +63,14 @@ func (c *Client) GetSessionContext(ctx context.Context, accessToken string, opts
 		return SessionContext{}, fmt.Errorf("%w: session context request failed", ErrInvalidToken)
 	}
 
-	var result SessionContext
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	var envelope struct {
+		Code    int            `json:"code"`
+		Message string         `json:"message"`
+		Result  SessionContext `json:"result"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil {
 		return SessionContext{}, err
 	}
 
-	return result, nil
+	return envelope.Result, nil
 }

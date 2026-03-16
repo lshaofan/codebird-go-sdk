@@ -25,41 +25,45 @@ func TestGetSessionContext(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]any{
-			"user": map[string]any{
-				"id":           "user_1",
-				"username":     "demo",
-				"name":         "Demo User",
-				"email":        "demo@example.com",
-				"phone_number": "13800000000",
-				"avatar":       "https://example.com/avatar.png",
-				"updated_at":   int64(1771311069),
-			},
-			"application": map[string]any{
-				"id":        "app_1",
-				"name":      "Demo App",
-				"type":      "SPA",
-				"tenant_id": "default",
-			},
-			"organization": map[string]any{
-				"id":        "org_1",
-				"name":      "Org 1",
-				"logo_url":  "https://example.com/logo.png",
-				"is_member": true,
-				"is_admin":  true,
-				"roles":     []string{"admin"},
-			},
-			"organizations": []map[string]any{
-				{
-					"id":       "org_1",
-					"name":     "Org 1",
-					"logo_url": "https://example.com/logo.png",
+			"code":    0,
+			"message": "success",
+			"result": map[string]any{
+				"user": map[string]any{
+					"id":           "user_1",
+					"username":     "demo",
+					"name":         "Demo User",
+					"email":        "demo@example.com",
+					"phone_number": "13800000000",
+					"avatar":       "https://example.com/avatar.png",
+					"updated_at":   int64(1771311069),
 				},
-			},
-			"session": map[string]any{
-				"subject":                 "user_1",
-				"client_id":               "app_1",
-				"scopes":                  []string{"openid", "profile"},
-				"current_organization_id": "org_1",
+				"application": map[string]any{
+					"id":        "app_1",
+					"name":      "Demo App",
+					"type":      "SPA",
+					"tenant_id": "default",
+				},
+				"organization": map[string]any{
+					"id":        "org_1",
+					"name":      "Org 1",
+					"logo_url":  "https://example.com/logo.png",
+					"is_member": true,
+					"is_admin":  true,
+					"roles":     []string{"admin"},
+				},
+				"organizations": []map[string]any{
+					{
+						"id":       "org_1",
+						"name":     "Org 1",
+						"logo_url": "https://example.com/logo.png",
+					},
+				},
+				"session": map[string]any{
+					"subject":                 "user_1",
+					"client_id":               "app_1",
+					"scopes":                  []string{"openid", "profile"},
+					"current_organization_id": "org_1",
+				},
 			},
 		})
 	}))
