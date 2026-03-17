@@ -7,6 +7,7 @@ var (
 	ErrInvalidAuthorizationHeader = errors.New("invalid authorization header")
 	ErrInvalidToken               = errors.New("invalid token")
 	ErrInvalidIssuer              = errors.New("invalid issuer")
+	ErrInvalidTenantSlug          = errors.New("invalid tenant slug")
 	ErrInvalidAudience            = errors.New("invalid audience")
 	ErrTokenExpired               = errors.New("token expired")
 	ErrTokenNotActive             = errors.New("token not active")
@@ -28,6 +29,10 @@ func IsInvalidToken(err error) bool {
 
 func IsInvalidIssuer(err error) bool {
 	return errors.Is(err, ErrInvalidIssuer)
+}
+
+func IsInvalidTenantSlug(err error) bool {
+	return errors.Is(err, ErrInvalidTenantSlug)
 }
 
 func IsInvalidAudience(err error) bool {

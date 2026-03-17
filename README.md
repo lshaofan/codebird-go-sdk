@@ -90,7 +90,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("user=%s app=%v organization=%v", sessionCtx.User.ID, sessionCtx.Application, sessionCtx.Organization)
+	log.Printf("tenant=%v user=%s app=%v organization=%v", sessionCtx.Tenant, sessionCtx.User.ID, sessionCtx.Application, sessionCtx.Organization)
 }
 ```
 
@@ -99,12 +99,43 @@ func main() {
 - `Verifier`：验证 token、解析轻量 claims
 - `Client.GetSessionContext`：获取实时用户 / 组织 / 应用上下文
 
+实时上下文里还会返回：
+
+- `SessionContext.Tenant`
+
+其中 `Tenant.Slug` 是终端用户租户化入口的标准标识，可用于识别：
+
+- `/t/{tenant.slug}/sign-in`
+- `/t/{tenant.slug}/account-center/...`
+
 也就是说：
 
 - claims 适合做轻量登录态上下文
 - 实时权限判断应以 `GetSessionContext` 结果为准
 - 轻量 claims 中是否为组织管理员，看 `OrganizationIsAdmin`
 - 实时上下文中是否为组织管理员，看 `SessionContext.Organization.IsAdmin`
+
+## 构造租户化终端用户入口
+
+如果业务系统需要自己构造认证中心终端用户入口，可以直接使用 `Client` 提供的 URL helper：
+
+```go
+signInURL, err := client.BuildTenantSignInURL("tenant-demo")
+registerURL, err := client.BuildTenantRegisterURL("tenant-demo")
+forgotPasswordURL, err := client.BuildTenantForgotPasswordURL("tenant-demo")
+```
+
+对应结果分别是：
+
+- `/t/{tenantSlug}/sign-in`
+- `/t/{tenantSlug}/register`
+- `/t/{tenantSlug}/forgot-password`
+
+注意：
+
+- `tenantSlug` 不能为空
+- 这组 helper 只用于终端用户入口地址构造
+- 账户中心仍然应通过后端 SSO 跳转地址进入，不建议手工拼裸 `/account-center/...`
 
 ## M2M 组织成员管理
 

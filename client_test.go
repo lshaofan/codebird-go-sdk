@@ -28,6 +28,11 @@ func TestGetSessionContext(t *testing.T) {
 			"code":    0,
 			"message": "success",
 			"result": map[string]any{
+				"tenant": map[string]any{
+					"id":   "default",
+					"slug": "default",
+					"name": "默认租户",
+				},
 				"user": map[string]any{
 					"id":           "user_1",
 					"username":     "demo",
@@ -92,6 +97,9 @@ func TestGetSessionContext(t *testing.T) {
 	if result.User.ID != "user_1" {
 		t.Fatalf("expected user id user_1, got %q", result.User.ID)
 	}
+	if result.Tenant == nil || result.Tenant.Slug != "default" {
+		t.Fatalf("expected tenant slug default, got %+v", result.Tenant)
+	}
 	if result.Application == nil || result.Application.ID != "app_1" {
 		t.Fatalf("expected application app_1, got %+v", result.Application)
 	}
@@ -125,5 +133,51 @@ func TestGetSessionContext_ReturnsErrorOnNonOKResponse(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("expected non-OK response to return error")
+	}
+}
+
+func TestBuildTenantAuthURLs(t *testing.T) {
+	client, err := NewClient(Config{
+		Issuer: "https://auth.example.com",
+	})
+	if err != nil {
+		t.Fatalf("new client: %v", err)
+	}
+
+	signInURL, err := client.BuildTenantSignInURL("tenant-demo")
+	if err != nil {
+		t.Fatalf("build sign-in url: %v", err)
+	}
+	if signInURL != "https://auth.example.com/t/tenant-demo/sign-in" {
+		t.Fatalf("unexpected sign-in url: %q", signInURL)
+	}
+
+	registerURL, err := client.BuildTenantRegisterURL("tenant-demo")
+	if err != nil {
+		t.Fatalf("build register url: %v", err)
+	}
+	if registerURL != "https://auth.example.com/t/tenant-demo/register" {
+		t.Fatalf("unexpected register url: %q", registerURL)
+	}
+
+	forgotPasswordURL, err := client.BuildTenantForgotPasswordURL("tenant-demo")
+	if err != nil {
+		t.Fatalf("build forgot-password url: %v", err)
+	}
+	if forgotPasswordURL != "https://auth.example.com/t/tenant-demo/forgot-password" {
+		t.Fatalf("unexpected forgot-password url: %q", forgotPasswordURL)
+	}
+}
+
+func TestBuildTenantAuthURLs_RequireTenantSlug(t *testing.T) {
+	client, err := NewClient(Config{
+		Issuer: "https://auth.example.com",
+	})
+	if err != nil {
+		t.Fatalf("new client: %v", err)
+	}
+
+	if _, err := client.BuildTenantSignInURL("   "); err == nil {
+		t.Fatal("expected empty tenant slug to return error")
 	}
 }

@@ -25,6 +25,18 @@ func NewClient(config Config) (*Client, error) {
 	}, nil
 }
 
+func (c *Client) BuildTenantSignInURL(tenantSlug string) (string, error) {
+	return c.buildTenantEntryURL(tenantSlug, "sign-in")
+}
+
+func (c *Client) BuildTenantRegisterURL(tenantSlug string) (string, error) {
+	return c.buildTenantEntryURL(tenantSlug, "register")
+}
+
+func (c *Client) BuildTenantForgotPasswordURL(tenantSlug string) (string, error) {
+	return c.buildTenantEntryURL(tenantSlug, "forgot-password")
+}
+
 func (c *Client) GetSessionContext(ctx context.Context, accessToken string, opts *GetSessionContextOptions) (SessionContext, error) {
 	if strings.TrimSpace(accessToken) == "" {
 		return SessionContext{}, fmt.Errorf("%w: access token is required", ErrInvalidToken)
@@ -73,4 +85,20 @@ func (c *Client) GetSessionContext(ctx context.Context, accessToken string, opts
 	}
 
 	return envelope.Result, nil
+}
+
+func (c *Client) buildTenantEntryURL(tenantSlug, route string) (string, error) {
+	normalizedTenantSlug := strings.TrimSpace(tenantSlug)
+	if normalizedTenantSlug == "" {
+		return "", fmt.Errorf("%w: tenant slug is required", ErrInvalidTenantSlug)
+	}
+
+	requestURL, err := url.Parse(c.endpoint)
+	if err != nil {
+		return "", err
+	}
+
+	basePath := strings.TrimRight(requestURL.Path, "/")
+	requestURL.Path = fmt.Sprintf("%s/t/%s/%s", basePath, url.PathEscape(normalizedTenantSlug), route)
+	return requestURL.String(), nil
 }

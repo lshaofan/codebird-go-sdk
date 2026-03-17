@@ -17,6 +17,12 @@ type SessionContextApplication struct {
 	TenantID string `json:"tenant_id"`
 }
 
+type SessionContextTenant struct {
+	ID   string `json:"id"`
+	Slug string `json:"slug"`
+	Name string `json:"name"`
+}
+
 type SessionContextOrganization struct {
 	ID       string   `json:"id"`
 	Name     string   `json:"name"`
@@ -40,6 +46,7 @@ type SessionContextSession struct {
 }
 
 type SessionContext struct {
+	Tenant        *SessionContextTenant              `json:"tenant"`
 	User          SessionContextUser                  `json:"user"`
 	Application   *SessionContextApplication          `json:"application"`
 	Organization  *SessionContextOrganization         `json:"organization"`
