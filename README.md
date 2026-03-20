@@ -151,10 +151,10 @@ import (
 
 func main() {
 	client, err := codebird.NewM2MClient(codebird.M2MConfig{
-		Endpoint:     "https://auth.codebird.cloud",
-		ClientID:     "YOUR_CLIENT_ID",
-		ClientSecret: "YOUR_CLIENT_SECRET",
-		Resource:     "urn:codebird:management-api:YOUR_TENANT_ID",
+		Endpoint:       "https://auth.codebird.cloud",
+		ClientID:       "YOUR_CLIENT_ID",
+		ClientSecret:   "YOUR_CLIENT_SECRET",
+		OrganizationID: "org_123",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -171,6 +171,19 @@ func main() {
 	log.Printf("members=%d", len(result.Data))
 }
 ```
+
+如果你只是调用组织成员管理接口，推荐只配置：
+
+- `Endpoint`
+- `ClientID`
+- `ClientSecret`
+- `OrganizationID`
+
+此时 SDK 会申请组织级 token，不需要传 `Resource`。
+
+只有在你明确要申请“组织级 API resource token”时，才额外传：
+
+- `Resource`
 
 当前首批支持的组织成员管理接口：
 

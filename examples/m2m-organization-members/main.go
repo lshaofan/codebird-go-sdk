@@ -16,16 +16,6 @@ func main() {
 		usage()
 	}
 
-	client, err := codebird.NewM2MClient(codebird.M2MConfig{
-		Endpoint:     mustEnv("CODEBIRD_ENDPOINT"),
-		ClientID:     mustEnv("CODEBIRD_CLIENT_ID"),
-		ClientSecret: mustEnv("CODEBIRD_CLIENT_SECRET"),
-		Resource:     mustEnv("CODEBIRD_RESOURCE"),
-	})
-	if err != nil {
-		log.Fatalf("failed to create m2m client: %v", err)
-	}
-
 	ctx := context.Background()
 	command := os.Args[1]
 
@@ -34,6 +24,7 @@ func main() {
 		if len(os.Args) < 3 {
 			usage()
 		}
+		client := mustClient(os.Args[2])
 
 		result, err := client.ListOrganizationMembers(ctx, os.Args[2], codebird.ListOrganizationMembersInput{
 			Page:     1,
@@ -45,6 +36,7 @@ func main() {
 		if len(os.Args) < 4 {
 			usage()
 		}
+		client := mustClient(os.Args[2])
 
 		input := codebird.AddOrganizationMemberInput{
 			Phone: os.Args[3],
@@ -63,6 +55,7 @@ func main() {
 		if len(os.Args) < 4 {
 			usage()
 		}
+		client := mustClient(os.Args[2])
 
 		fatalIfErr(client.RemoveOrganizationMember(ctx, os.Args[2], os.Args[3]))
 		fmt.Println("ok")
@@ -70,6 +63,7 @@ func main() {
 		if len(os.Args) < 4 {
 			usage()
 		}
+		client := mustClient(os.Args[2])
 
 		result, err := client.GetOrganizationMemberRoles(ctx, os.Args[2], os.Args[3])
 		fatalIfErr(err)
@@ -78,6 +72,7 @@ func main() {
 		if len(os.Args) < 5 {
 			usage()
 		}
+		client := mustClient(os.Args[2])
 
 		input := codebird.UpdateOrganizationMemberRolesInput{
 			RoleIDs: os.Args[4:],
@@ -89,6 +84,21 @@ func main() {
 	}
 }
 
+func mustClient(organizationID string) *codebird.M2MClient {
+	client, err := codebird.NewM2MClient(codebird.M2MConfig{
+		Endpoint:       mustEnv("CODEBIRD_ENDPOINT"),
+		ClientID:       mustEnv("CODEBIRD_CLIENT_ID"),
+		ClientSecret:   mustEnv("CODEBIRD_CLIENT_SECRET"),
+		OrganizationID: organizationID,
+		Resource:       optionalEnv("CODEBIRD_RESOURCE"),
+	})
+	if err != nil {
+		log.Fatalf("failed to create m2m client: %v", err)
+	}
+
+	return client
+}
+
 func mustEnv(key string) string {
 	value := strings.TrimSpace(os.Getenv(key))
 	if value == "" {
@@ -96,6 +106,10 @@ func mustEnv(key string) string {
 	}
 
 	return value
+}
+
+func optionalEnv(key string) string {
+	return strings.TrimSpace(os.Getenv(key))
 }
 
 func fatalIfErr(err error) {
